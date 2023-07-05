@@ -1,0 +1,40 @@
+<% if @genre.errors.any? %>
+  <div class='row'>
+    <div class='small-12 medium-3 columns flash-error'>
+      <% @genre.errors.full_messages.each do |msg| %>
+        <%= msg %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if @band.errors.any? %>
+  <div class='row'>
+    <div class='small-12 medium-3 columns flash-error'>
+      <% @band.errors.full_messages.each do |msg| %>
+        <%= msg %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class='row'>
+<div class='small-12 medium-4 columns border'>
+    <%= form_for @band do |f| %>
+      <%= f.label :name %>
+      <%= f.text_field :name %>
+
+      <%= fields_for :genre_list do |field| %>
+        <%= field.label :genre %>
+        <%= field.text_field :genre %>
+      <% end %>
+
+      <p>If you enter your Spotify URI of your band, your fans will be able to preview your music when deciding if they want to RSVP to your shows. To find your Spotify URI, go to your band's Spotify page and click the options button to the right of the follow button. Then click on "Copy Spotify URI"</p>
+
+      <%= f.label :spotify_uri, "Spotify URI" %>
+      <%= f.text_field :spotify_uri %>
+
+      <%= f.submit "Update band", class: "button" %>
+    <% end %>
+  </div>
+</div>

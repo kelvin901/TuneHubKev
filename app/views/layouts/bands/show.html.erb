@@ -1,0 +1,127 @@
+<div class='show-photo'>
+	<div id="band-name">
+	  <div class="panel">
+	    <h2><%= @band.name %></h2>
+	  </div>
+		<div>
+			<% if @band.spotify_uri %>
+				<iframe src="https://embed.spotify.com/?uri=<%= @band.spotify_uri %>" width="300" height="80" frameborder="0" allowtransparency="true"></iframe>
+			<% end %>
+		</div>
+	</div>
+</div>
+
+<% if signed_in? && !current_user.following?(@band) %>
+	<%= button_to "Follow #{@band.name}", band_follows_path(@band),
+								method: :create, class: "button" %>
+<% elsif signed_in? && current_user.following?(@band) %>
+	Following
+	<%= button_to "Stop following #{@band.name}", follow_path(current_user.follows.find_by(band: @band)),
+								method: :delete, class: "button" %>
+<% end %>
+
+<div class='row'>
+	<div class='small-12 columns'>
+		<h3>Photos</h3>
+		<ul class="panel small-block-grid-2 medium-block-grid-4">
+			<% @band.photos.each do |photo| %>
+				<li>
+					<div>
+						<%= link_to((image_tag photo.image.url(:thumb), id: "band-photo"), photo.image.url) %>
+					</div>
+					<% if current_user == @band.user %>
+						<div>
+							<%= link_to("Delete photo", band_photo_path(@band, photo), method: :delete, data: { confirm: "Are you sure?" }) %>
+						</div>
+					</li>
+				<% end %>
+			<% end %>
+		</ul>
+		<% if current_user == @band.user %>
+			<div class="row">
+				<div class="small-6 medium-2 columns">
+					<%= link_to("Upload photo", new_band_photo_path(@band), class: "button") %>
+				</div>
+			</div>
+		<% end %>
+		<div class="small-4 columns panel">
+			Genres:
+			<ul class="inline-list">
+				<li><%= @band.genre_list.genre %></li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-6 columns">
+		<h3>Upcoming Shows:</h3>
+		<% @band.shows.where("show_date > ?", DateTime.now).order(:show_date).each do |show| %>
+			<a href="<%= show_path(show) %>">
+				<div class="panel">
+					<%= "#{show.date_and_time} at #{show.venue.name}, #{show.venue.city}, #{show.venue.state}" %>
+				</div>
+			</a>
+		<% end %>
+	</div>
+	<div class="small-6 columns">
+		<h3>Band News:</h3>
+		<% if current_user == @band.user %>
+			<div class='row'>
+				<div class='small-12 columns panel'>
+					<%= form_for [@band, @band_post] do |f| %>
+
+						<%= f.label :title %>
+						<%= f.text_field :title %>
+
+						<%= f.label :content %>
+						<%= f.text_area :content %>
+
+						<%= f.submit "Post status update", class: "button" %>
+					<% end %>
+				</div>
+			</div>
+		<% end %>
+
+		<% if @band.band_posts %>
+			<% @band.band_posts.sort_by { |post| post.created_at }.reverse.each do |post| %>
+				<div class='row'>
+					<div class='small-12 columns panel'>
+						<div><h4><%= post.title %></h4></div>
+						<div><%= post.content %></div>
+						<% if current_user == @band.user %>
+							<%= link_to("Edit status", edit_band_band_post_path(@band, post), class: "button") %>
+							<%= link_to("Delete status", band_band_post_path(@band, post), method: :delete, data: { confirm: "Are you sure?" }, class: "button") %>
+						<% end %>
+					</div>
+				</div>
+			<% end %>
+		<% end %>
+	</div>
+</div>
+
+<div class="row">
+	<div class="columns">
+		<% if current_user == @band.user %>
+			<%= link_to("Edit band", edit_band_path(@band), class: "button") %>
+			<%= link_to("Delete band", band_path(@band), method: :delete, data: { confirm: "Are you sure?" }, class: "button") %>
+		<% end %>
+	</div>
+</div>
+
+<% if @band.photos.any? %>
+  <style>
+    .show-photo {
+      background-image: url(<%= @band.photos.first.image.url %>);
+      background-position: center;
+      background-size: cover;
+    }
+  </style>
+<% end %>
+
+<div class="row">
+	<h3>Touring History</h3>
+  <div class="columns large-12">
+		<div id='band-map' style="width: 100%; height: 500px;" data-band-id="<%= @band.id %>"></div>
+ 	</div>
+</div>
